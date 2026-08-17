@@ -1,0 +1,97 @@
+{
+  "character": {
+    "id": "97130e84-b082-4c9a-bc00-1c0d3623469a",
+    "name": "Character Details:\n- Name: Uni Student\n- Style: Modern university student, casual clothes (jeans and t-shirt), young adult\n- Gender: Male (or Female, pick one)\n- Distinctive feature: maybe holding books or a phone",
+    "prompt": "Character Details:\n- Name: Uni Student\n- Style: Modern university student, casual clothes (jeans and t-shirt), young adult\n- Gender: Male (or Female, pick one)\n- Distinctive feature: maybe holding books or a phone",
+    "size": {
+      "width": 80,
+      "height": 80
+    },
+    "template_id": "mannequin",
+    "directions": 8,
+    "view": "high top-down",
+    "created_at": "2026-05-01T08:54:32.43818+00:00"
+  },
+  "frames": {
+    "rotations": {
+      "south": "rotations/south.png",
+      "south-east": "rotations/south-east.png",
+      "east": "rotations/east.png",
+      "north-east": "rotations/north-east.png",
+      "north": "rotations/north.png",
+      "north-west": "rotations/north-west.png",
+      "west": "rotations/west.png",
+      "south-west": "rotations/south-west.png"
+    },
+    "animations": {
+      "animation-d4689b3c": {
+        "south-west": [
+          "animations/animation-d4689b3c/south-west/frame_000.png",
+          "animations/animation-d4689b3c/south-west/frame_001.png",
+          "animations/animation-d4689b3c/south-west/frame_002.png",
+          "animations/animation-d4689b3c/south-west/frame_003.png",
+          "animations/animation-d4689b3c/south-west/frame_004.png",
+          "animations/animation-d4689b3c/south-west/frame_005.png"
+        ],
+        "north-west": [
+          "animations/animation-d4689b3c/north-west/frame_000.png",
+          "animations/animation-d4689b3c/north-west/frame_001.png",
+          "animations/animation-d4689b3c/north-west/frame_002.png",
+          "animations/animation-d4689b3c/north-west/frame_003.png",
+          "animations/animation-d4689b3c/north-west/frame_004.png",
+          "animations/animation-d4689b3c/north-west/frame_005.png"
+        ],
+        "north-east": [
+          "animations/animation-d4689b3c/north-east/frame_000.png",
+          "animations/animation-d4689b3c/north-east/frame_001.png",
+          "animations/animation-d4689b3c/north-east/frame_002.png",
+          "animations/animation-d4689b3c/north-east/frame_003.png",
+          "animations/animation-d4689b3c/north-east/frame_004.png",
+          "animations/animation-d4689b3c/north-east/frame_005.png"
+        ],
+        "south-east": [
+          "animations/animation-d4689b3c/south-east/frame_000.png",
+          "animations/animation-d4689b3c/south-east/frame_001.png",
+          "animations/animation-d4689b3c/south-east/frame_002.png",
+          "animations/animation-d4689b3c/south-east/frame_003.png",
+          "animations/animation-d4689b3c/south-east/frame_004.png",
+          "animations/animation-d4689b3c/south-east/frame_005.png"
+        ],
+        "north": [
+          "animations/animation-d4689b3c/north/frame_000.png",
+          "animations/animation-d4689b3c/north/frame_001.png",
+          "animations/animation-d4689b3c/north/frame_002.png",
+          "animations/animation-d4689b3c/north/frame_003.png",
+          "animations/animation-d4689b3c/north/frame_004.png",
+          "animations/animation-d4689b3c/north/frame_005.png"
+        ],
+        "east": [
+          "animations/animation-d4689b3c/east/frame_000.png",
+          "animations/animation-d4689b3c/east/frame_001.png",
+          "animations/animation-d4689b3c/east/frame_002.png",
+          "animations/animation-d4689b3c/east/frame_003.png",
+          "animations/animation-d4689b3c/east/frame_004.png",
+          "animations/animation-d4689b3c/east/frame_005.png"
+        ],
+        "south": [
+          "animations/animation-d4689b3c/south/frame_000.png",
+          "animations/animation-d4689b3c/south/frame_001.png",
+          "animations/animation-d4689b3c/south/frame_002.png",
+          "animations/animation-d4689b3c/south/frame_003.png",
+          "animations/animation-d4689b3c/south/frame_004.png",
+          "animations/animation-d4689b3c/south/frame_005.png"
+        ],
+        "west": [
+          "animations/animation-d4689b3c/west/frame_000.png",
+          "animations/animation-d4689b3c/west/frame_001.png",
+          "animations/animation-d4689b3c/west/frame_002.png",
+          "animations/animation-d4689b3c/west/frame_003.png",
+          "animations/animation-d4689b3c/west/frame_004.png",
+          "animations/animation-d4689b3c/west/frame_005.png"
+        ]
+      }
+    }
+  },
+  "export_version": "2.0",
+  "export_date": "2026-05-01T09:00:23.851289"
+}

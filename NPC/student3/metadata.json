@@ -1,0 +1,81 @@
+{
+  "character": {
+    "id": "302b41ea-3a21-4832-992b-b39e550e2cba",
+    "name": "Down (South)Up (North)Side (East)Up-Diagonal (Northeast)Down-Diagonal (Southeast).I need you to create a complete NPC implementation for a \"Chai Wala\" character in my JavaFX game. The NPC should use a sprite sheet with 32 frames 56\u00d756 pixels) and have random wandering movement with idle/walking animations in 8 directions .  Here's exactly how my existing Uni Student NPC works - I need the Chai Wala to work identically:  ## Uni Student Reference Code:  Image Uni_facing_south = new Image(\"file:src/uni_student/rotations/south.png\");  Image[] Uni_standing_still_south = {     new Image(\"file:src/uni_student/animations/breathing-idle/south/frame_000.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/south/frame_001.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/south/frame_002.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/south/frame_003.png\") }; Image[] Uni_standing_still_north = {     new Image(\"file:src/uni_student/animations/breathing-idle/north/frame_000.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/north/frame_001.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/north/frame_002.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/north/frame_003.png\") }; Image[] Uni_standing_still_east = {     new Image(\"file:src/uni_student/animations/breathing-idle/east/frame_000.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/east/frame_001.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/east/frame_002.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/east/frame_003.png\") }; Image[] Uni_standing_still_west = {     new Image(\"file:src/uni_student/animations/breathing-idle/west/frame_000.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/west/frame_001.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/west/frame_002.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/west/frame_003.png\") }; // Also has north_east, north_west, south_east, south_west variants  Image[] Uni_walking_south = {     new Image(\"file:src/uni_student/animations/walking/south/frame_000.png\"),     new Image(\"file:src/uni_student/animations/walking/south/frame_001.png\"),     new Image(\"file:src/uni_student/animations/walking/south/frame_002.png\"),     new Image(\"file:src/uni_student/animations/walking/south/frame_003.png\"),     new Image(\"file:src/uni_student/animations/walking/south/frame_004.png\"),     new Image(\"file:src/uni_student/animations/walking/south/frame_005.png\") }; // Similarly for north, east, west, and diagonal directions , ",
+    "prompt": "Down (South)Up (North)Side (East)Up-Diagonal (Northeast)Down-Diagonal (Southeast).I need you to create a complete NPC implementation for a \"Chai Wala\" character in my JavaFX game. The NPC should use a sprite sheet with 32 frames 56\u00d756 pixels) and have random wandering movement with idle/walking animations in 8 directions .  Here's exactly how my existing Uni Student NPC works - I need the Chai Wala to work identically:  ## Uni Student Reference Code:  Image Uni_facing_south = new Image(\"file:src/uni_student/rotations/south.png\");  Image[] Uni_standing_still_south = {     new Image(\"file:src/uni_student/animations/breathing-idle/south/frame_000.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/south/frame_001.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/south/frame_002.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/south/frame_003.png\") }; Image[] Uni_standing_still_north = {     new Image(\"file:src/uni_student/animations/breathing-idle/north/frame_000.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/north/frame_001.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/north/frame_002.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/north/frame_003.png\") }; Image[] Uni_standing_still_east = {     new Image(\"file:src/uni_student/animations/breathing-idle/east/frame_000.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/east/frame_001.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/east/frame_002.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/east/frame_003.png\") }; Image[] Uni_standing_still_west = {     new Image(\"file:src/uni_student/animations/breathing-idle/west/frame_000.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/west/frame_001.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/west/frame_002.png\"),     new Image(\"file:src/uni_student/animations/breathing-idle/west/frame_003.png\") }; // Also has north_east, north_west, south_east, south_west variants  Image[] Uni_walking_south = {     new Image(\"file:src/uni_student/animations/walking/south/frame_000.png\"),     new Image(\"file:src/uni_student/animations/walking/south/frame_001.png\"),     new Image(\"file:src/uni_student/animations/walking/south/frame_002.png\"),     new Image(\"file:src/uni_student/animations/walking/south/frame_003.png\"),     new Image(\"file:src/uni_student/animations/walking/south/frame_004.png\"),     new Image(\"file:src/uni_student/animations/walking/south/frame_005.png\") }; // Similarly for north, east, west, and diagonal directions , ",
+    "size": {
+      "width": 80,
+      "height": 80
+    },
+    "template_id": "mannequin",
+    "directions": 8,
+    "view": "high top-down",
+    "created_at": "2026-05-01T08:31:46.177211+00:00"
+  },
+  "frames": {
+    "rotations": {
+      "south": "rotations/south.png",
+      "south-east": "rotations/south-east.png",
+      "east": "rotations/east.png",
+      "north-east": "rotations/north-east.png",
+      "north": "rotations/north.png",
+      "north-west": "rotations/north-west.png",
+      "west": "rotations/west.png",
+      "south-west": "rotations/south-west.png"
+    },
+    "animations": {
+      "Walking-172dfa7a": {
+        "south-east": [
+          "animations/Walking-172dfa7a/south-east/frame_000.png",
+          "animations/Walking-172dfa7a/south-east/frame_001.png",
+          "animations/Walking-172dfa7a/south-east/frame_002.png",
+          "animations/Walking-172dfa7a/south-east/frame_003.png"
+        ],
+        "north-east": [
+          "animations/Walking-172dfa7a/north-east/frame_000.png",
+          "animations/Walking-172dfa7a/north-east/frame_001.png",
+          "animations/Walking-172dfa7a/north-east/frame_002.png",
+          "animations/Walking-172dfa7a/north-east/frame_003.png"
+        ],
+        "west": [
+          "animations/Walking-172dfa7a/west/frame_000.png",
+          "animations/Walking-172dfa7a/west/frame_001.png",
+          "animations/Walking-172dfa7a/west/frame_002.png",
+          "animations/Walking-172dfa7a/west/frame_003.png"
+        ],
+        "south": [
+          "animations/Walking-172dfa7a/south/frame_000.png",
+          "animations/Walking-172dfa7a/south/frame_001.png",
+          "animations/Walking-172dfa7a/south/frame_002.png",
+          "animations/Walking-172dfa7a/south/frame_003.png"
+        ],
+        "east": [
+          "animations/Walking-172dfa7a/east/frame_000.png",
+          "animations/Walking-172dfa7a/east/frame_001.png",
+          "animations/Walking-172dfa7a/east/frame_002.png",
+          "animations/Walking-172dfa7a/east/frame_003.png"
+        ],
+        "south-west": [
+          "animations/Walking-172dfa7a/south-west/frame_000.png",
+          "animations/Walking-172dfa7a/south-west/frame_001.png",
+          "animations/Walking-172dfa7a/south-west/frame_002.png",
+          "animations/Walking-172dfa7a/south-west/frame_003.png"
+        ],
+        "north": [
+          "animations/Walking-172dfa7a/north/frame_000.png",
+          "animations/Walking-172dfa7a/north/frame_001.png",
+          "animations/Walking-172dfa7a/north/frame_002.png",
+          "animations/Walking-172dfa7a/north/frame_003.png"
+        ],
+        "north-west": [
+          "animations/Walking-172dfa7a/north-west/frame_000.png",
+          "animations/Walking-172dfa7a/north-west/frame_001.png",
+          "animations/Walking-172dfa7a/north-west/frame_002.png",
+          "animations/Walking-172dfa7a/north-west/frame_003.png"
+        ]
+      }
+    }
+  },
+  "export_version": "2.0",
+  "export_date": "2026-05-01T08:37:57.437745"
+}
