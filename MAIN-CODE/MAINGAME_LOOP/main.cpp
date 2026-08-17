@@ -337,8 +337,8 @@ int main()
     float introElapsed = 0.f;
 
     std::vector<std::string> introLines = {
-    "Hello guys, my name is Yenna.",
-    "Please help me survive a day in NUST!"
+    "Yenna: Hello guys, my name is Yenna.",
+    "Yenna: Please help me survive a day in NUST!"
     };
     int introLineIndex = 0;
     float charsPerSecond = 15.f; // typing speed inside the bubble
@@ -356,14 +356,30 @@ int main()
     speechBubble.setOutlineThickness(2.f);
     speechBubble.setOutlineColor(sf::Color(60, 40, 20));
 
-    std::vector<std::string> seniorDialogue = {
+    std::vector<std::string> seniorDialogue1 = {
         "Senior: Oh hey, you're new here?",
-        "Senior: Welcome to NUST, good luck surviving!"
+        "Senior: Can you help me find my notes ??"
+    };
+    std::vector<std::string>seniorDialogue2={
+            "Senior: Thanks alot !",
+            "Senior: I have to go now see u later ;)"
     };
     int dialogueIndex = 0;
     float dialogueElapsed = 0.f;
     bool showingDialogue = false;
     float interactionRange = 60.f; // pixels — tune based on how close feels right
+
+    
+    
+    // --- book pickup (added) ---
+    const std::string bookLayerName = "Beds and stuff"; // <-- set this to the exact Tiled layer name your book tile is on
+    const int bookTileX = 38;
+    const int bookTileY = 35;
+    const int bookWidth=2;
+    const int bookHeight=2;
+
+
+    bool bookPickedUp = false;
 
     Slider masterVolumeSlider;
     masterVolumeSlider.setup(sf::Vector2f(1150, 440), 175.f);
@@ -447,8 +463,55 @@ int main()
             }
             else if (currentState == GameState::playing)
             {
+                if(event.type == sf::Event::KeyPressed && event.key.code ==sf::Keyboard::P)
+                {
+                    sf::Vector2i tile = hostel_map.worldToTile(player.getPosition());
+                    std::cout << "Player tile: " << tile.x << ", " << tile.y << std::endl;
+                }
+                
                 if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::E)
                 {
+                    // --- book pickup (added): checked first so standing near the book
+                    // takes priority over talking to the senior ---
+                    sf::Vector2i playerTile = hostel_map.worldToTile(player.getPosition());
+                    int bookDx = std::abs(playerTile.x - bookTileX);
+                    int bookDy = std::abs(playerTile.y - bookTileY);
+                    bool nearBook = (bookDx <= 1 && bookDy <= 1) && !bookPickedUp;
+                    if(!bookPickedUp)
+                    {
+                        for(int x=bookTileX ; x<bookTileX+bookWidth;x++)
+                        {
+                            for(int y=bookTileY;y<bookTileY+bookHeight;y++)
+                            {
+                                int dx = std::abs(playerTile.x - x);
+                                int dy = std::abs(playerTile.y - y);
+                                if (dx <= 1 && dy <= 1)
+                                {
+                                    nearBook = true;
+                                    break;
+                                }
+                                if(nearBook) break;
+                            }
+                        }
+                    }
+
+                    if (nearBook)
+                    {
+                        for (int x =bookTileX;x<bookTileX+bookWidth;x++)
+                        {
+                            for(int y=bookTileY;y<bookTileY+bookHeight;y++)
+                            {
+                                hostel_map.hideTile("Beds and stuff",x,y);
+                            }
+                        }
+                        bookPickedUp=true;
+                        std::cout<<"Book is picked up"<<std::endl;
+
+                        // TODO: hook up real inventory / quest logic here, e.g.
+                        // inventory.add("Book");
+                    }
+                    else
+                    {
                     float dist = std::hypot(
                         player.getPosition().x - senior.getPosition().x,
                         player.getPosition().y - senior.getPosition().y
@@ -460,20 +523,23 @@ int main()
                         dialogueIndex = 0;
                         dialogueElapsed = 0.f;
                     }
+                    
                     else if (showingDialogue)
                     {
+                        const std::vector<std::string> & activeDialogue =bookPickedUp ? seniorDialogue2:seniorDialogue1;
                         int visibleChars = static_cast<int>(dialogueElapsed * charsPerSecond);
-                        bool doneTyping = visibleChars >= (int)seniorDialogue[dialogueIndex].size();
+                        bool doneTyping = visibleChars >= (int)activeDialogue[dialogueIndex].size();
 
                         if (!doneTyping)
-                            dialogueElapsed = seniorDialogue[dialogueIndex].size() / charsPerSecond + 0.01f;
+                            dialogueElapsed = activeDialogue[dialogueIndex].size() / charsPerSecond + 0.01f;
                         else
                         {
                             dialogueIndex++;
                             dialogueElapsed = 0.f;
-                            if (dialogueIndex >= (int)seniorDialogue.size())
+                            if (dialogueIndex >= (int)activeDialogue.size())
                                 showingDialogue = false;
                         }
+                    }
                     }
                 }
             }
@@ -561,7 +627,7 @@ int main()
             std::vector<sf::FloatRect> playerCollisionRects = collisionRects;
             playerCollisionRects.push_back(senior.getCollisionBox());
 
-            if (!showingDialogue)
+            if (!showingDialogue) 
                 player.handleMovement(deltaTime, playerCollisionRects);
             player.updateAnimation(deltaTime);
 
@@ -582,9 +648,11 @@ int main()
             {
                 dialogueElapsed += deltaTime;
 
+                const std::vector<std::string> & activeDialogue =bookPickedUp?seniorDialogue2:seniorDialogue1;
+
                 int visibleChars = static_cast<int>(dialogueElapsed * charsPerSecond);
-                visibleChars = std::min(visibleChars, (int)seniorDialogue[dialogueIndex].size());
-                std::string revealed = seniorDialogue[dialogueIndex].substr(0, visibleChars);
+                visibleChars = std::min(visibleChars, (int)activeDialogue[dialogueIndex].size());
+                std::string revealed = activeDialogue[dialogueIndex].substr(0, visibleChars);
 
                 bubbleText.setString(revealed);
                 sf::FloatRect textBounds = bubbleText.getLocalBounds();

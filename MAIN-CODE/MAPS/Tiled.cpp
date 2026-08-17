@@ -6,9 +6,31 @@
 #include <vector>
 #include <map>
 
+struct TileVertexRef { size_t layerIndex; int tilesetKey; size_t vertexIndex; };
+std::map<std::string, std::map<std::pair<int,int>, TileVertexRef>> m_tileLookup;
 class TileMap : public sf::Drawable, public sf::Transformable
 {
 public:
+    sf::Vector2i worldToTile(sf::Vector2f worldPos) const
+    {
+        auto tileSize = m_map.getTileSize();
+        return sf::Vector2i(static_cast<int>(worldPos.x) / static_cast<int>(tileSize.x),
+                            static_cast<int>(worldPos.y) / static_cast<int>(tileSize.y));
+    }
+
+    void hideTile(const std::string& layerName, int tileX, int tileY)
+    {
+        auto layerIt = m_tileLookup.find(layerName);
+        if (layerIt == m_tileLookup.end()) return;
+        auto tileIt = layerIt->second.find({tileX, tileY});
+        if (tileIt == layerIt->second.end()) return;
+
+        const auto& ref = tileIt->second;
+        auto& va = m_layers[ref.layerIndex].vertsByTileset[ref.tilesetKey];
+        
+        for (int i = 0; i < 4; ++i)
+            va[ref.vertexIndex + i].color.a = 0;
+    }
     bool load(const std::string& tmxPath)
     {
         if (!m_map.load(tmxPath))
@@ -168,6 +190,8 @@ private:
 
                 for (int i = 0; i < 4; ++i)
                     batch.vertsByTileset[tsKey].append(quad[i]);
+                    size_t vIndex = batch.vertsByTileset[tsKey].getVertexCount() - 4;
+                    m_tileLookup[layer.getName()][{(int)x, (int)y}] = { m_layers.size(), tsKey, vIndex };
             }
         }
 
