@@ -15,7 +15,7 @@ public:
     // === ADJUST THESE if your folder names differ ===
     std::string walkAnimationName = "Walking";
     std::string idleAnimationName = "breathing-idle";
-
+   
     bool loadAllAnimations(const std::string& basePath, sf::Vector2f startPos, sf::Vector2f displaySize)
     {
         // animation folders you have — add more names here if you add more later
@@ -153,6 +153,10 @@ public:
     sf::Vector2f getPosition() const
     {
         return m_sprite.getPosition();
+    }
+    void setPosition(sf::Vector2f pos)
+    {
+        m_sprite.setPosition(pos);
     }
 
     const sf::Texture& getPortraitTexture() const

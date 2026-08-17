@@ -314,6 +314,15 @@ int main()
     {
         std::cerr << "Hostel map aint loading help me please" << std::endl;
     }
+    TileMap C2_map;
+    if(!C2_map.load("/home/wasay/Myprojects/GAME/Maps/C2.tmx"))
+    {
+        std::cerr<<"C2 map aint working ahole"<<std::endl;
+    }
+
+    std::vector<sf::FloatRect> C2_furniture_collision = C2_map.getCollisionRects("things above c2");
+    std::vector<sf::FloatRect> C2_tree_collision = C2_map.getCollisionRects("trees");  
+    C2_furniture_collision.insert(C2_furniture_collision.end(),C2_tree_collision.begin(),C2_tree_collision.end());
 
     // Build collision rectangles from the "Boundaries" and "Beds and stuff" layers.
     // Add more layer names here the same way if you want other furniture layers to be solid too.
@@ -332,7 +341,8 @@ int main()
     "/home/wasay/Myprojects/GAME/NPC/senior_uni", // reusing your existing character assets for now — point at a different folder once you have a second character's frames
     sf::Vector2f(350, 600),                   // starting position, somewhere else on the map
     sf::Vector2f(50, 50)
-);
+);  
+    bool isHostel_Map=true;
 
     float introElapsed = 0.f;
 
@@ -463,6 +473,19 @@ int main()
             }
             else if (currentState == GameState::playing)
             {
+                if(isHostel_Map)
+                {
+                    sf::Vector2f playerPos=player.getPosition();
+
+                    if(playerPos.y>=920.f)
+                    {
+                        isHostel_Map=false;
+                        player.setPosition(sf::Vector2f(25.f,950.f));
+                        std::cout<<"We moving to the other map"<<std::endl;
+
+                    }
+                }   
+
                 if(event.type == sf::Event::KeyPressed && event.key.code ==sf::Keyboard::P)
                 {
                     sf::Vector2i tile = hostel_map.worldToTile(player.getPosition());
@@ -544,6 +567,7 @@ int main()
                 }
             }
         }
+       
 
         window.clear(sf::Color::Black);
 
@@ -620,11 +644,13 @@ int main()
         }
        else // Playing state
         {
+
+            std::vector<sf::FloatRect> active_collision=isHostel_Map? collisionRects:C2_furniture_collision;
             if(!showingDialogue)
             {
-                senior.update(deltaTime,collisionRects);
+                senior.update(deltaTime,active_collision);
             }
-            std::vector<sf::FloatRect> playerCollisionRects = collisionRects;
+            std::vector<sf::FloatRect> playerCollisionRects = active_collision;
             playerCollisionRects.push_back(senior.getCollisionBox());
 
             if (!showingDialogue) 
@@ -640,9 +666,17 @@ int main()
             gameView.setCenter(center);
             window.setView(gameView);
 
-            window.draw(hostel_map);
-            player.draw(window);
-            senior.draw(window);
+            if(isHostel_Map)
+            {
+                window.draw(hostel_map);
+                player.draw(window);
+                senior.draw(window);
+            }
+            else
+            {
+                window.draw(C2_map);
+                player.draw(window);
+            }
 
             if (showingDialogue)
             {
