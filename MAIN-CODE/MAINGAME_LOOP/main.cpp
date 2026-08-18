@@ -2,6 +2,8 @@
 #include <iostream>
 #include <string>
 #include <math.h>
+#include<cstdlib>
+#include<ctime>
 #include <algorithm>
 #include "../MAPS/Tiled.cpp"
 #include "main_char.cpp"
@@ -198,7 +200,8 @@ enum GameState
     Menu,
     Setting,
     CharacterIntro,
-    playing
+    playing,
+    transition_between_maps
 };
 GameState currentState = GameState::Menu;
 
@@ -259,6 +262,7 @@ struct Button
 
 int main()
 {
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
     sf::RenderWindow window(sf::VideoMode(1920, 1080), "Lost In NUST");
     std::cout << "Window created successfully!" << std::endl;
 
@@ -332,16 +336,72 @@ int main()
 
     AnimatedPlayer player;
     player.loadAllAnimations(
-        "/home/wasay/Myprojects/GAME/Main-Char",
-        sf::Vector2f(350, 350),
-        sf::Vector2f(50, 50)
+    "/home/wasay/Myprojects/GAME/Main-Char",
+    sf::Vector2f(350, 350),
+    sf::Vector2f(50, 50)
     );
     NPCCharacter senior;
     senior.loadAllAnimations(
     "/home/wasay/Myprojects/GAME/NPC/senior_uni", // reusing your existing character assets for now — point at a different folder once you have a second character's frames
     sf::Vector2f(350, 600),                   // starting position, somewhere else on the map
     sf::Vector2f(50, 50)
-);  
+    );  
+    NPCCharacter student2;
+    student2.loadAllAnimations(
+    "/home/wasay/Myprojects/GAME/NPC/student2",
+    sf::Vector2f(390,600),
+    sf::Vector2f(50,50)
+    );
+    student2.loadIdleFromRotation("/home/wasay/Myprojects/GAME/NPC/student2/rotations");
+    
+    NPCCharacter student1;
+    student1.loadAllAnimations(
+        "/home/wasay/Myprojects/GAME/NPC/student1",
+        sf::Vector2f(570,600),
+        sf::Vector2f(50,50)
+    );
+    student1.loadIdleFromRotation("/home/wasay/Myprojects/GAME/NPC/student1/rotations");
+
+    NPCCharacter fem_std1;
+    fem_std1.loadAllAnimations(
+        "/home/wasay/Myprojects/GAME/NPC/fem_std1",
+        sf::Vector2f(500,600),
+        sf::Vector2f(50,50)
+    );
+    fem_std1.loadIdleFromRotation("/home/wasay/Myprojects/GAME/NPC/fem_std1/rotations");
+
+    NPCCharacter fem_student;
+    fem_student.loadAllAnimations(
+        "/home/wasay/Myprojects/GAME/NPC/fem_student",
+        sf::Vector2f(300,600),
+        sf::Vector2f(50,50)
+    );
+    fem_student.loadIdleFromRotation("/home/wasay/Myprojects/GAME/NPC/fem_student/rotations");
+
+    NPCCharacter student3;
+    student3.loadAllAnimations(
+        "/home/wasay/Myprojects/GAME/NPC/student3",
+        sf::Vector2f(200,600),
+        sf::Vector2f(50,50)
+    );
+    student3.loadIdleFromRotation("/home/wasay/Myprojects/GAME/NPC/student3/rotations");
+
+    NPCCharacter uni_boy;
+    uni_boy.loadAllAnimations(
+        "/home/wasay/Myprojects/GAME/NPC/uni_boy",
+        sf::Vector2f(100,600),
+        sf::Vector2f(50,50)
+    );
+
+    uni_boy.loadIdleFromRotation("/home/wasay/Myprojects/GAME/NPC/uni_boy/rotations");
+
+    NPCCharacter uni_student;
+    uni_student.loadAllAnimations(
+        "/home/wasay/Myprojects/GAME/NPC/uni_student",
+        sf::Vector2f(800,600),
+        sf::Vector2f(50,50)
+    );
+
     bool isHostel_Map=true;
 
     float introElapsed = 0.f;
@@ -645,13 +705,43 @@ int main()
        else // Playing state
         {
 
+
             std::vector<sf::FloatRect> active_collision=isHostel_Map? collisionRects:C2_furniture_collision;
             if(!showingDialogue)
             {
-                senior.update(deltaTime,active_collision);
+                if(isHostel_Map)
+                {
+                    senior.update(deltaTime,active_collision);
+                }
+                else
+                {
+                    student2.update(deltaTime,active_collision);
+                    student1.update(deltaTime,active_collision);
+                    student3.update(deltaTime,active_collision);
+                    fem_std1.update(deltaTime,active_collision);
+                    fem_student.update(deltaTime,active_collision);
+                    uni_boy.update(deltaTime,active_collision);
+                    uni_student.update(deltaTime,active_collision);
+                }
+                
             }
             std::vector<sf::FloatRect> playerCollisionRects = active_collision;
-            playerCollisionRects.push_back(senior.getCollisionBox());
+            if(isHostel_Map)
+            {
+                playerCollisionRects.push_back(senior.getCollisionBox());
+
+            }
+            else
+            {
+                playerCollisionRects.push_back(student2.getCollisionBox());
+                playerCollisionRects.push_back(student1.getCollisionBox());
+                playerCollisionRects.push_back(student3.getCollisionBox());
+                playerCollisionRects.push_back(fem_std1.getCollisionBox());
+                playerCollisionRects.push_back(fem_student.getCollisionBox());
+                playerCollisionRects.push_back(uni_boy.getCollisionBox());
+                playerCollisionRects.push_back(uni_student.getCollisionBox());
+
+            }
 
             if (!showingDialogue) 
                 player.handleMovement(deltaTime, playerCollisionRects);
@@ -676,6 +766,14 @@ int main()
             {
                 window.draw(C2_map);
                 player.draw(window);
+                student2.draw(window);
+                student1.draw(window);
+                student3.draw(window);
+                fem_std1.draw(window);
+                fem_student.draw(window);
+                uni_boy.draw(window);
+                uni_student.draw(window);
+
             }
 
             if (showingDialogue)

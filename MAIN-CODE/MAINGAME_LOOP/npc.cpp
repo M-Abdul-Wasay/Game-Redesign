@@ -75,7 +75,31 @@ public:
         updateFrameTexture();
         return true;
     }
+    bool loadIdleFromRotation(const std::string& rotationPath)
+    {
+        std::vector<std::string> directionNames = {
+            "north", "north-east", "east", "south-east",
+            "south", "south-west", "west", "north-west"
+        };
 
+        bool loadedAny = false;
+        for (const auto& dir : directionNames)
+        {
+            std::string fullPath = rotationPath + "/" + dir + ".png"; // <-- adjust filename pattern if yours differ
+
+            sf::Texture tex;
+            if (tex.loadFromFile(fullPath))
+            {
+                m_animations[idleAnimationName][dir] = { tex }; // single-frame "animation"
+                loadedAny = true;
+            }
+            else
+            {
+                std::cerr << "Warning: NPC could not load rotation frame " << fullPath << std::endl;
+            }
+        }
+        return loadedAny;
+    }
     void update(float deltaTime, const std::vector<sf::FloatRect>& collisionRects)
     {
         m_stateTimer -= deltaTime;
@@ -164,9 +188,13 @@ private:
         m_stateTimer = 1.f + static_cast<float>(std::rand() % 150) / 100.f;
     }
 
-    void updateAnimation(float deltaTime)
+   void updateAnimation(float deltaTime)
     {
-        std::string targetAnim = m_isMoving ? walkAnimationName : idleAnimationName;
+        // fall back to the walk animation if this NPC has no idle set loaded at all —
+        // prevents freezing on a stale mid-walk frame when idle frames are missing
+        bool hasIdle = m_animations.find(idleAnimationName) != m_animations.end();
+        std::string targetAnim = (m_isMoving || !hasIdle) ? walkAnimationName : idleAnimationName;
+
         if (targetAnim != m_currentAnimation)
         {
             m_currentAnimation = targetAnim;
@@ -174,19 +202,38 @@ private:
             m_frameTimer = 0.f;
         }
 
-        float duration = m_isMoving ? walkFrameDuration : idleFrameDuration;
-        m_frameTimer += deltaTime;
-        if (m_frameTimer >= duration)
+        if (m_isMoving)
         {
-            m_frameTimer = 0.f;
-            int frameCount = getFrameCount();
-            if (frameCount > 0)
-                m_currentFrame = (m_currentFrame + 1) % frameCount;
+            m_frameTimer += deltaTime;
+            if (m_frameTimer >= walkFrameDuration)
+            {
+                m_frameTimer = 0.f;
+                int frameCount = getFrameCount();
+                if (frameCount > 0)
+                    m_currentFrame = (m_currentFrame + 1) % frameCount;
+            }
+        }
+        else if (hasIdle)
+        {
+            m_frameTimer += deltaTime;
+            if (m_frameTimer >= idleFrameDuration)
+            {
+                m_frameTimer = 0.f;
+                int frameCount = getFrameCount();
+                if (frameCount > 0)
+                    m_currentFrame = (m_currentFrame + 1) % frameCount;
+            }
+        }
+        else
+        {
+            // no idle frames for this NPC — freeze on the walk cycle's first frame
+            // (a clean standing pose) instead of cycling or freezing mid-step
+            m_currentFrame = 0;
         }
 
         updateFrameTexture();
-    }
-
+    } 
+    
     int getFrameCount() const
     {
         auto animIt = m_animations.find(m_currentAnimation);
