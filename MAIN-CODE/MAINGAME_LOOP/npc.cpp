@@ -12,18 +12,24 @@ public:
     float speed = 60.f; // usually slower than the player, tweak to taste
     float walkFrameDuration = 0.35f;
     float idleFrameDuration = 0.5f;
-    sf::FloatRect getCollisionBox() const
-        {
-            sf::Vector2f pos = m_sprite.getPosition();
-            return sf::FloatRect(
-                pos.x - collisionBoxSize.x / 2.f,
-                pos.y + m_displaySize.y / 2.f - collisionBoxSize.y,
-                collisionBoxSize.x,
-                collisionBoxSize.y
-            );
-        }
+
+    // set true for NPCs that should never wander (e.g. the professor) —
+    // use loadStationaryIdle() to set this up automatically
+    bool isStationary = false;
+
     std::string walkAnimationName = "Walking";
     std::string idleAnimationName = "breathing-idle";
+
+    sf::FloatRect getCollisionBox() const
+    {
+        sf::Vector2f pos = m_sprite.getPosition();
+        return sf::FloatRect(
+            pos.x - collisionBoxSize.x / 2.f,
+            pos.y + m_displaySize.y / 2.f - collisionBoxSize.y,
+            collisionBoxSize.x,
+            collisionBoxSize.y
+        );
+    }
 
     bool loadAllAnimations(const std::string& basePath, sf::Vector2f startPos, sf::Vector2f displaySize)
     {
@@ -75,6 +81,7 @@ public:
         updateFrameTexture();
         return true;
     }
+
     bool loadIdleFromRotation(const std::string& rotationPath)
     {
         std::vector<std::string> directionNames = {
@@ -100,8 +107,58 @@ public:
         }
         return loadedAny;
     }
+
+    // For NPCs that just stand in one spot facing one direction (e.g. the professor).
+    // Loads only the breathing-idle frames for facingDirection, and disables wandering entirely.
+    bool loadStationaryIdle(const std::string& basePath, sf::Vector2f position, sf::Vector2f displaySize, const std::string& facingDirection = "east")
+    {
+        std::vector<sf::Texture> frames;
+        bool loadedAny = false;
+
+        for (int i = 0; i < 4; ++i)
+        {
+            char frameFile[16];
+            snprintf(frameFile, sizeof(frameFile), "frame_%03d.png", i);
+            std::string fullPath = basePath + "/breathing-idle/" + facingDirection + "/" + frameFile;
+
+            sf::Texture tex;
+            if (tex.loadFromFile(fullPath))
+            {
+                frames.push_back(tex);
+                loadedAny = true;
+            }
+            else
+            {
+                std::cerr << "Warning: could not load " << fullPath << std::endl;
+            }
+        }
+
+        if (!loadedAny)
+        {
+            std::cerr << "Error: no stationary idle frames loaded from " << basePath << std::endl;
+            return false;
+        }
+
+        m_animations[idleAnimationName][facingDirection] = frames;
+        m_currentAnimation = idleAnimationName;
+        m_currentDirection = facingDirection;
+        m_isMoving = false;
+        isStationary = true;
+
+        m_sprite.setPosition(position);
+        m_displaySize = displaySize;
+        updateFrameTexture();
+        return true;
+    }
+
     void update(float deltaTime, const std::vector<sf::FloatRect>& collisionRects)
     {
+        if (isStationary)
+        {
+            updateAnimation(deltaTime);
+            return;
+        }
+
         m_stateTimer -= deltaTime;
 
         if (m_stateTimer <= 0.f)
@@ -188,7 +245,7 @@ private:
         m_stateTimer = 1.f + static_cast<float>(std::rand() % 150) / 100.f;
     }
 
-   void updateAnimation(float deltaTime)
+    void updateAnimation(float deltaTime)
     {
         // fall back to the walk animation if this NPC has no idle set loaded at all —
         // prevents freezing on a stale mid-walk frame when idle frames are missing
@@ -232,8 +289,8 @@ private:
         }
 
         updateFrameTexture();
-    } 
-    
+    }
+
     int getFrameCount() const
     {
         auto animIt = m_animations.find(m_currentAnimation);
@@ -264,8 +321,6 @@ private:
         sf::Vector2f scale(m_displaySize.x / texSize.x, m_displaySize.y / texSize.y);
         m_sprite.setScale(scale);
     }
-
-    
 
     bool isColliding(const std::vector<sf::FloatRect>& collisionRects) const
     {

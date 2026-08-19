@@ -307,7 +307,8 @@ enum MinigameID
     None = -1,
     UniBoyQuiz = 1,
     Student1Typing = 2,
-    FemStd1MathQuiz = 3
+    FemStd1MathQuiz = 3,
+    UniProfProgQuiz = 4
 };
 
 struct MinigameTrigger
@@ -380,6 +381,15 @@ int main()
     {
         std::cerr<<"C2 map aint working ahole"<<std::endl;
     }
+    TileMap Seecs_map;
+    if(!Seecs_map.load("/home/wasay/Myprojects/GAME/Maps/Seecs.tmx"))
+    {
+        std::cerr<<"SEECS aint loading help me please"<<std::endl;
+    }
+
+    std::vector<sf::FloatRect> Seecs_furnitureCollision=Seecs_map.getCollisionRects("class room thing");
+    std::vector<sf::FloatRect> Seecs_boundaries=Seecs_map.getCollisionRects("boundries");
+    Seecs_furnitureCollision.insert(Seecs_furnitureCollision.end(),Seecs_boundaries.begin(),Seecs_boundaries.end());
 
     std::vector<sf::FloatRect> C2_furniture_collision = C2_map.getCollisionRects("things above c2");
     std::vector<sf::FloatRect> C2_tree_collision = C2_map.getCollisionRects("trees");
@@ -458,16 +468,24 @@ int main()
         sf::Vector2f(50,50)
     );
 
-    bool isHostel_Map = true;
+    NPCCharacter uni_prof;
+    uni_prof.loadStationaryIdle(
+        "/home/wasay/Myprojects/GAME/NPC/uni-professor/",
+        sf::Vector2f(610,200),
+        sf::Vector2f(50,50)
+    );
+    enum class ActiveMap { Hostel, C2, Seecs };
+    ActiveMap currentMap = ActiveMap::Hostel;
 
     int activeMinigameId = MinigameID::None;
     sf::Vector2f minigameReturnPos;
-    bool minigameReturnMap = true;
+    ActiveMap minigameReturnMap = ActiveMap::Hostel;
 
     std::vector<MinigameTrigger> minigameTriggers = {
         { &uni_boy,   MinigameID::UniBoyQuiz      },
         { &student1,  MinigameID::Student1Typing  },
-        { &fem_std1,  MinigameID::FemStd1MathQuiz }
+        { &fem_std1,  MinigameID::FemStd1MathQuiz },
+        { &uni_prof,  MinigameID::UniProfProgQuiz }
     };
 
     // --- Typing Minigame Data ---
@@ -496,6 +514,16 @@ int main()
     int currentQuizIndex = 0;
     bool quizFinished = false;
     bool quizWon = false;
+
+    // --- Programming Quiz Minigame Data ---
+    std::vector<QuizQuestion> progQuizQuestions = {
+        {"Which C++ operator performs a bitwise XOR?", {"& (AND)", "^ (XOR)", "| (OR)"}, 1},
+        {"What principle does a Stack data structure follow?", {"LIFO (Last-In First-Out)", "FIFO (First-In First-Out)", "FILO (First-In Last-Out)"}, 0},
+        {"Which Java framework is typically used for Desktop GUIs?", {"Spring Boot", "Hibernate", "JavaFX"}, 2}
+    };
+    int currentProgQuizIndex = 0;
+    bool progQuizFinished = false;
+    bool progQuizWon = false;
 
     // --- Math Quiz Minigame Data ---
     int mathOp1 = 0;
@@ -537,6 +565,9 @@ int main()
     std::vector<std::string> seniorDialogue2 = {
         "Senior: Thanks alot !",
         "Senior: I have to go now see u later ;)"
+    };
+    std::vector<std::string>Uniprof={
+        "I am taking a surprise quiz"
     };
     int dialogueIndex = 0;
     float dialogueElapsed = 0.f;
@@ -634,7 +665,7 @@ int main()
                 {
                     currentState = GameState::playing;
                     player.setPosition(minigameReturnPos);
-                    isHostel_Map = minigameReturnMap;
+                    currentMap = minigameReturnMap;
                     activeMinigameId = MinigameID::None;
                 }
 
@@ -644,7 +675,7 @@ int main()
                     {
                         currentState = GameState::playing;
                         player.setPosition(minigameReturnPos);
-                        isHostel_Map = minigameReturnMap;
+                        currentMap = minigameReturnMap;
                         activeMinigameId = MinigameID::None;
                     }
                     else if (!typingComplete && event.type == sf::Event::TextEntered)
@@ -673,7 +704,7 @@ int main()
                     {
                         currentState = GameState::playing;
                         player.setPosition(minigameReturnPos);
-                        isHostel_Map = minigameReturnMap;
+                        currentMap = minigameReturnMap;
                         activeMinigameId = MinigameID::None;
                     }
                     else if (!quizFinished && event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
@@ -702,13 +733,48 @@ int main()
                         }
                     }
                 }
+                else if (activeMinigameId == MinigameID::UniProfProgQuiz)
+                {
+                    if (progQuizFinished && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter)
+                    {
+                        currentState = GameState::playing;
+                        player.setPosition(minigameReturnPos);
+                        currentMap = minigameReturnMap;
+                        activeMinigameId = MinigameID::None;
+                    }
+                    else if (!progQuizFinished && event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
+                    {
+                        sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+                        for (int i = 0; i < 3; ++i)
+                        {
+                            sf::FloatRect optBounds(560.f, 480.f + (i * 80.f), 800.f, 60.f);
+                            if (optBounds.contains(mousePos))
+                            {
+                                if (i == progQuizQuestions[currentProgQuizIndex].correctIndex)
+                                {
+                                    currentProgQuizIndex++;
+                                    if (currentProgQuizIndex >= (int)progQuizQuestions.size())
+                                    {
+                                        progQuizFinished = true;
+                                        progQuizWon = true;
+                                    }
+                                }
+                                else
+                                {
+                                    progQuizFinished = true;
+                                    progQuizWon = false;
+                                }
+                            }
+                        }
+                    }
+                }
                 else if (activeMinigameId == MinigameID::FemStd1MathQuiz)
                 {
                     if (mathAnswered && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter)
                     {
                         currentState = GameState::playing;
                         player.setPosition(minigameReturnPos);
-                        isHostel_Map = minigameReturnMap;
+                        currentMap = minigameReturnMap;
                         activeMinigameId = MinigameID::None;
                     }
                     else if (!mathAnswered && event.type == sf::Event::TextEntered)
@@ -743,14 +809,26 @@ int main()
             }
             else if (currentState == GameState::playing)
             {
-                if (isHostel_Map)
+                if (currentMap == ActiveMap::Hostel)
                 {
                     sf::Vector2f playerPos = player.getPosition();
                     if (playerPos.y >= 920.f)
                     {
-                        isHostel_Map = false;
+                        currentMap = ActiveMap::C2;
                         player.setPosition(sf::Vector2f(25.f, 950.f));
                         std::cout << "We moving to the other map" << std::endl;
+                    }
+                }
+                else if (currentMap == ActiveMap::C2)
+                {
+                    sf::Vector2f playerPos = player.getPosition();
+                    // TODO: adjust this coordinate to wherever the actual C2->Seecs
+                    // doorway/edge is on your map, and adjust the Seecs spawn point below
+                    if (playerPos.x >= 1000.f)
+                    {
+                        currentMap = ActiveMap::Seecs;
+                        player.setPosition(sf::Vector2f(25.f, 500.f));
+                        std::cout << "We moving to Seecs map" << std::endl;
                     }
                 }
 
@@ -762,7 +840,7 @@ int main()
 
                 if (event.type == sf::Event::KeyReleased&& event.key.code == sf::Keyboard::E)
                 {
-                    if (isHostel_Map)
+                    if (currentMap == ActiveMap::Hostel)
                     {
                         sf::Vector2i playerTile = hostel_map.worldToTile(player.getPosition());
                         int bookDx = std::abs(playerTile.x - bookTileX);
@@ -842,7 +920,7 @@ int main()
                             {
                                 activeMinigameId = trig.id;
                                 minigameReturnPos = player.getPosition();
-                                minigameReturnMap = isHostel_Map;
+                                minigameReturnMap = currentMap;
                                 currentState = GameState::Minigame;
 
                                 if (trig.id == MinigameID::Student1Typing)
@@ -857,6 +935,12 @@ int main()
                                     currentQuizIndex = 0;
                                     quizFinished = false;
                                     quizWon = false;
+                                }
+                                else if (trig.id == MinigameID::UniProfProgQuiz)
+                                {
+                                    currentProgQuizIndex = 0;
+                                    progQuizFinished = false;
+                                    progQuizWon = false;
                                 }
                                 else if (trig.id == MinigameID::FemStd1MathQuiz)
                                 {
@@ -969,9 +1053,11 @@ int main()
 
             // High Contrast Retro Accent Colors 
             sf::Color accent =
-                (activeMinigameId == MinigameID::Student1Typing) ? sf::Color(0, 255, 204) :
-                (activeMinigameId == MinigameID::UniBoyQuiz)     ?sf::Color(70, 130, 180) : // Calmer Steel Blue
-                                                         sf::Color(255, 204, 0); 
+                (activeMinigameId == MinigameID::Student1Typing)  ? sf::Color(0, 255, 204) :
+                (activeMinigameId == MinigameID::UniBoyQuiz)      ? sf::Color(70, 130, 180) :
+                (activeMinigameId == MinigameID::UniProfProgQuiz) ? sf::Color(153, 50, 204) : // Dark Orchid Purple 
+                                                                    sf::Color(255, 204, 0); 
+            
             sf::Color pixelBlack(15, 15, 20);
             sf::Color pixelDark(30, 30, 40);
             sf::Color shadowColor(0, 0, 0, 150);
@@ -1167,6 +1253,70 @@ int main()
                     drawCenteredText(window, enterTxt, 960.f, 560.f, true);
                 }
             }
+            else if (activeMinigameId == MinigameID::UniProfProgQuiz)
+            {
+                sf::Text titleText("CS PROFESSOR'S EXAM", introFont, 40);
+                titleText.setFillColor(accent);
+                titleText.setStyle(sf::Text::Bold);
+                drawCenteredText(window, titleText, 960.f, 290.f, true);
+
+                sf::Text progressText("QUESTION " + std::to_string(currentProgQuizIndex + 1) + " OF " + std::to_string((int)progQuizQuestions.size()), introFont, 16);
+                progressText.setFillColor(sf::Color(180, 180, 180));
+                drawCenteredText(window, progressText, 960.f, 335.f, true);
+
+                if (!progQuizFinished) {
+                    sf::Text qText(progQuizQuestions[currentProgQuizIndex].question, introFont, 26);
+                    qText.setFillColor(sf::Color::White);
+                    drawCenteredText(window, qText, 960.f, 400.f, true);
+
+                    const char* labels[3] = { "A.", "B.", "C." };
+                    for (int i = 0; i < 3; ++i) {
+                        sf::FloatRect optBounds(560.f, 480.f + (i * 80.f), 800.f, 65.f);
+                        bool isHovered = optBounds.contains(mousePos);
+
+                        // Chunky Button Shadow
+                        sf::RectangleShape btnShadow(sf::Vector2f(800.f, 65.f));
+                        btnShadow.setFillColor(pixelBlack);
+                        btnShadow.setPosition(565.f, 485.f + (i * 80.f));
+                        window.draw(btnShadow);
+
+                        // Main Button Body
+                        sf::RectangleShape optBorder(sf::Vector2f(800.f, 65.f));
+                        optBorder.setFillColor(isHovered ? sf::Color::White : accent);
+                        optBorder.setPosition(560.f, 480.f + (i * 80.f));
+                        window.draw(optBorder);
+
+                        // Inner Box
+                        sf::RectangleShape optBox(sf::Vector2f(790.f, 55.f));
+                        optBox.setFillColor(isHovered ? accent : pixelDark);
+                        optBox.setPosition(565.f, 485.f + (i * 80.f));
+                        window.draw(optBox);
+
+                        sf::Text badgeText(labels[i], introFont, 24);
+                        badgeText.setFillColor(isHovered ? pixelBlack : sf::Color::White);
+                        badgeText.setStyle(sf::Text::Bold);
+                        badgeText.setOrigin(0, badgeText.getLocalBounds().height / 2.f);
+                        badgeText.setPosition(590.f, 502.f + (i * 80.f));
+                        window.draw(badgeText);
+
+                        sf::Text optText(progQuizQuestions[currentProgQuizIndex].options[i], introFont, 24);
+                        optText.setFillColor(isHovered ? pixelBlack : sf::Color::White);
+                        optText.setOrigin(0, optText.getLocalBounds().height / 2.f);
+                        optText.setPosition(650.f, 502.f + (i * 80.f));
+                        window.draw(optText);
+                    }
+                }
+                else {
+                    sf::Text resText(progQuizWon ? "A+ SECURED - EXAM PASSED" : "F GRADE - TRY AGAIN NEXT SEMESTER", introFont, 32);
+                    resText.setFillColor(progQuizWon ? sf::Color(0, 255, 128) : sf::Color(255, 50, 50));
+                    resText.setStyle(sf::Text::Bold);
+                    drawCenteredText(window, resText, 960.f, 480.f, true);
+
+                    sf::Text enterTxt(">> PRESS ENTER TO CONTINUE <<", introFont, 20);
+                    enterTxt.setFillColor(sf::Color::White);
+                    drawCenteredText(window, enterTxt, 960.f, 560.f, true);
+                }
+            }
             else if (activeMinigameId == MinigameID::FemStd1MathQuiz)
             {
                 sf::Text titleText("ALGORITHM TEST", introFont, 40);
@@ -1260,14 +1410,17 @@ int main()
         }
         else
         {
-            std::vector<sf::FloatRect> active_collision = isHostel_Map ? collisionRects : C2_furniture_collision;
+            std::vector<sf::FloatRect> active_collision =
+                (currentMap == ActiveMap::Hostel) ? collisionRects :
+                (currentMap == ActiveMap::C2)     ? C2_furniture_collision :
+                                                      Seecs_furnitureCollision;
             if (!showingDialogue)
             {
-                if (isHostel_Map)
+                if (currentMap == ActiveMap::Hostel)
                 {
                     senior.update(deltaTime, active_collision);
                 }
-                else
+                else if (currentMap == ActiveMap::C2)
                 {
                     student2.update(deltaTime, active_collision);
                     student1.update(deltaTime, active_collision);
@@ -1277,13 +1430,26 @@ int main()
                     uni_boy.update(deltaTime, active_collision);
                     uni_student.update(deltaTime, active_collision);
                 }
+                else if (currentMap==ActiveMap::Seecs)
+                {
+                    student2.update(deltaTime, active_collision);
+                    student1.update(deltaTime, active_collision);
+                    student3.update(deltaTime, active_collision);
+                    fem_std1.update(deltaTime, active_collision);
+                    fem_student.update(deltaTime, active_collision);
+                    uni_boy.update(deltaTime, active_collision);
+                    uni_student.update(deltaTime, active_collision);
+                    uni_prof.update(deltaTime,active_collision);
+
+                }
+                // Seecs has no NPCs yet — add an else-if branch here when it does
             }
             std::vector<sf::FloatRect> playerCollisionRects = active_collision;
-            if (isHostel_Map)
+            if (currentMap == ActiveMap::Hostel)
             {
                 playerCollisionRects.push_back(senior.getCollisionBox());
             }
-            else
+            else if (currentMap == ActiveMap::C2)
             {
                 playerCollisionRects.push_back(student2.getCollisionBox());
                 playerCollisionRects.push_back(student1.getCollisionBox());
@@ -1292,6 +1458,17 @@ int main()
                 playerCollisionRects.push_back(fem_student.getCollisionBox());
                 playerCollisionRects.push_back(uni_boy.getCollisionBox());
                 playerCollisionRects.push_back(uni_student.getCollisionBox());
+            }
+            else if(currentMap == ActiveMap::Seecs)
+            {
+                playerCollisionRects.push_back(student2.getCollisionBox());
+                playerCollisionRects.push_back(student1.getCollisionBox());
+                playerCollisionRects.push_back(student3.getCollisionBox());
+                playerCollisionRects.push_back(fem_std1.getCollisionBox());
+                playerCollisionRects.push_back(fem_student.getCollisionBox());
+                playerCollisionRects.push_back(uni_boy.getCollisionBox());
+                playerCollisionRects.push_back(uni_student.getCollisionBox());
+                playerCollisionRects.push_back(uni_prof.getCollisionBox());
             }
 
             if (!showingDialogue)
@@ -1307,13 +1484,13 @@ int main()
             gameView.setCenter(center);
             window.setView(gameView);
 
-            if (isHostel_Map)
+            if (currentMap == ActiveMap::Hostel)
             {
                 window.draw(hostel_map);
                 player.draw(window);
                 senior.draw(window);
             }
-            else
+            else if (currentMap == ActiveMap::C2)
             {
                 window.draw(C2_map);
                 player.draw(window);
@@ -1328,6 +1505,20 @@ int main()
                 for (auto& trig : minigameTriggers) {
                     drawInteractionBubble(window, trig.npc->getPosition(), introFont, totalTime);
                 }
+            }
+            else // Seecs
+            {
+                window.draw(Seecs_map);
+                player.draw(window);
+                uni_prof.draw(window);
+                student2.draw(window);
+                student1.draw(window);
+                student3.draw(window);
+                fem_std1.draw(window);
+                fem_student.draw(window);
+                uni_boy.draw(window);
+                uni_student.draw(window);
+
             }
 
             if (showingDialogue)
