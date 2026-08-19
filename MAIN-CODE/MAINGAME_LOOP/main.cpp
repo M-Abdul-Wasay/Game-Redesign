@@ -26,10 +26,18 @@ void toggleFullScreen(sf::RenderWindow& window, bool fullscreen, sf::View& uiVie
     window.setView(uiView);
 }
 
-void drawCenteredText(sf::RenderWindow& window, sf::Text& text, float x, float y) 
+void drawCenteredText(sf::RenderWindow& window, sf::Text& text, float x, float y, bool shadow = false) 
 {
     sf::FloatRect bounds = text.getLocalBounds();
     text.setOrigin(bounds.left + bounds.width / 2.0f, bounds.top + bounds.height / 2.0f);
+    
+    if (shadow) {
+        sf::Text shadowText = text;
+        shadowText.setFillColor(sf::Color(10, 10, 14, 200));
+        shadowText.setPosition(x + 4.f, y + 4.f);
+        window.draw(shadowText);
+    }
+    
     text.setPosition(x, y);
     window.draw(text);
 }
@@ -509,6 +517,8 @@ int main()
 
     sf::Font introFont;
     introFont.loadFromFile("/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf");
+    // crisp, non-antialiased text edges for the pixel-art look
+    introFont.setSmooth(false); 
 
     sf::Text bubbleText;
     bubbleText.setFont(introFont);
@@ -744,13 +754,13 @@ int main()
                     }
                 }
 
-                if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P)
+                if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::P)
                 {
                     sf::Vector2i tile = hostel_map.worldToTile(player.getPosition());
                     std::cout << "Player tile: " << tile.x << ", " << tile.y << std::endl;
                 }
 
-                if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::E)
+                if (event.type == sf::Event::KeyReleased&& event.key.code == sf::Keyboard::E)
                 {
                     if (isHostel_Map)
                     {
@@ -957,133 +967,294 @@ int main()
 
             window.setView(uiView);
 
-            RoundedRectangleShape minigamePanel(sf::Vector2f(1000.f, 600.f), 20.f);
-            minigamePanel.setFillColor(sf::Color(25, 26, 30, 245)); 
-            minigamePanel.setOrigin(500.f, 300.f);
-            minigamePanel.setPosition(960.f, 540.f);
-            minigamePanel.setOutlineThickness(2.f);
-            minigamePanel.setOutlineColor(sf::Color(80, 80, 100)); 
-            window.draw(minigamePanel);
+            // High Contrast Retro Accent Colors 
+            sf::Color accent =
+                (activeMinigameId == MinigameID::Student1Typing) ? sf::Color(0, 255, 204) :
+                (activeMinigameId == MinigameID::UniBoyQuiz)     ?sf::Color(70, 130, 180) : // Calmer Steel Blue
+                                                         sf::Color(255, 204, 0); 
+            sf::Color pixelBlack(15, 15, 20);
+            sf::Color pixelDark(30, 30, 40);
+            sf::Color shadowColor(0, 0, 0, 150);
+
+            // Drop shadow for main panel
+            sf::RectangleShape panelShadow(sf::Vector2f(1016.f, 616.f));
+            panelShadow.setFillColor(shadowColor);
+            panelShadow.setOrigin(508.f, 308.f);
+            panelShadow.setPosition(980.f, 560.f);
+            window.draw(panelShadow);
+
+            // Main Frame Outer
+            sf::RectangleShape panelOuter(sf::Vector2f(1016.f, 616.f));
+            panelOuter.setFillColor(pixelBlack);
+            panelOuter.setOrigin(508.f, 308.f);
+            panelOuter.setPosition(960.f, 540.f);
+            window.draw(panelOuter);
+
+            // Colored Inner Accent Border
+            sf::RectangleShape panelBorder(sf::Vector2f(996.f, 596.f));
+            panelBorder.setFillColor(accent);
+            panelBorder.setOrigin(498.f, 298.f);
+            panelBorder.setPosition(960.f, 540.f);
+            window.draw(panelBorder);
+
+            // Dark Fill Background
+            sf::RectangleShape panelFill(sf::Vector2f(980.f, 580.f));
+            panelFill.setFillColor(pixelDark);
+            panelFill.setOrigin(490.f, 290.f);
+            panelFill.setPosition(960.f, 540.f);
+            window.draw(panelFill);
+
+            // Heavy Pixel Notch / Bevel Design Overlays
+            float notch = 20.f;
+            sf::Vector2f corners[4] = {
+                {960.f - 508.f, 540.f - 308.f}, {960.f + 508.f - notch, 540.f - 308.f},
+                {960.f - 508.f, 540.f + 308.f - notch}, {960.f + 508.f - notch, 540.f + 308.f - notch}
+            };
+            for (auto& c : corners)
+            {
+                sf::RectangleShape cn(sf::Vector2f(notch, notch));
+                cn.setFillColor(pixelBlack);
+                cn.setPosition(c);
+                window.draw(cn);
+            }
 
             sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
             if (activeMinigameId == MinigameID::Student1Typing)
             {
-                sf::Text titleText("TERMINAL OVERRIDE", introFont, 32);
-                titleText.setFillColor(sf::Color(100, 200, 255)); 
-                drawCenteredText(window, titleText, 960.f, 300.f);
+                sf::Text titleText("SYSTEM OVERRIDE", introFont, 40);
+                titleText.setFillColor(accent);
+                titleText.setStyle(sf::Text::Bold);
+                drawCenteredText(window, titleText, 960.f, 300.f, true); // Added Shadow
 
-                sf::Text instructions("Type the phrase accurately. Press ESC to abort.", introFont, 18);
-                instructions.setFillColor(sf::Color(150, 150, 150));
-                drawCenteredText(window, instructions, 960.f, 350.f);
+                sf::Text instructions("TYPE TO BYPASS SECURITY. [ESC] TO ABORT.", introFont, 18);
+                instructions.setFillColor(sf::Color(180, 180, 180));
+                drawCenteredText(window, instructions, 960.f, 355.f, true);
 
-                // --- Overhauled Overlay Typing Visualization ---
-                sf::Text targetText(typingTarget, introFont, 26);
-                targetText.setFillColor(sf::Color(80, 80, 80)); 
-                
+                // Chunky Input Box
+                sf::RectangleShape typingBoxBorder(sf::Vector2f(836.f, 100.f));
+                typingBoxBorder.setFillColor(pixelBlack);
+                typingBoxBorder.setOrigin(418.f, 50.f);
+                typingBoxBorder.setPosition(960.f, 460.f);
+                window.draw(typingBoxBorder);
+
+                sf::RectangleShape typingBox(sf::Vector2f(820.f, 84.f));
+                typingBox.setFillColor(sf::Color(5, 5, 8));
+                typingBox.setOrigin(410.f, 42.f);
+                typingBox.setPosition(960.f, 460.f);
+                window.draw(typingBox);
+
+                sf::Text targetText(typingTarget, introFont, 28);
+                targetText.setFillColor(sf::Color(60, 60, 70)); // Dim background text
                 sf::FloatRect tgtBounds = targetText.getLocalBounds();
                 float startX = 960.f - (tgtBounds.width / 2.f);
-                float startY = 450.f - (tgtBounds.height / 2.f);
-                
+                float startY = 460.f - (tgtBounds.height / 2.f) - 8.f;
                 targetText.setOrigin(0, 0);
                 targetText.setPosition(startX, startY);
                 window.draw(targetText);
 
-                bool isCorrect = typingTarget.find(typingInput) == 0;
+                float charX = startX;
+                for (size_t i = 0; i < typingInput.size() && i < typingTarget.size(); ++i)
+                {
+                    bool charOk = typingInput[i] == typingTarget[i];
+                    sf::Text ch(std::string(1, typingTarget[i]), introFont, 28);
+                    ch.setFillColor(charOk ? sf::Color(0, 255, 128) : sf::Color(255, 50, 50));
+                    ch.setOrigin(0, 0);
+                    ch.setPosition(charX, startY);
+                    window.draw(ch);
+                    charX = startX + targetText.findCharacterPos(i + 1).x - targetText.findCharacterPos(0).x;
+                }
+
+                // Blinking Cursor
+                if (!typingComplete && (int)(totalTime * 3) % 2 == 0)
+                {
+                    sf::RectangleShape cursor(sf::Vector2f(16.f, 32.f));
+                    cursor.setFillColor(accent);
+                    cursor.setPosition(startX + targetText.findCharacterPos(typingInput.size()).x - targetText.findCharacterPos(0).x, startY + 4.f);
+                    window.draw(cursor);
+                }
+
+                // Chunky Progress Bar
+                float progress = typingTarget.empty() ? 0.f : static_cast<float>(typingInput.size()) / typingTarget.size();
+                sf::RectangleShape progTrack(sf::Vector2f(820.f, 20.f));
+                progTrack.setFillColor(pixelBlack);
+                progTrack.setOrigin(410.f, 10.f);
+                progTrack.setPosition(960.f, 530.f);
+                window.draw(progTrack);
                 
-                std::string displayInput = typingInput;
-                if (!typingComplete && (int)(totalTime * 2) % 2 == 0) displayInput += "_";
-                
-                sf::Text inputText(displayInput, introFont, 26);
-                inputText.setFillColor(isCorrect ? sf::Color(100, 255, 100) : sf::Color(255, 100, 100));
-                inputText.setOrigin(0, 0);
-                inputText.setPosition(startX, startY);
-                window.draw(inputText);
+                if (progress > 0.f)
+                {
+                    sf::RectangleShape progFill(sf::Vector2f(810.f * progress, 10.f));
+                    progFill.setFillColor(accent);
+                    progFill.setOrigin(0.f, 5.f);
+                    progFill.setPosition(555.f, 530.f);
+                    window.draw(progFill);
+                }
 
                 if (typingComplete) {
                     float wpm = (typingTarget.size() / 5.f) / (typingCompletionTime / 60.f);
-                    sf::Text result("Access Granted. Speed: " + std::to_string(static_cast<int>(wpm)) + " WPM", introFont, 26);
-                    result.setFillColor(sf::Color::Yellow);
-                    drawCenteredText(window, result, 960.f, 600.f);
-                    
-                    sf::Text enterTxt("[ Press ENTER to continue ]", introFont, 18);
+                    sf::Text result("ACCESS GRANTED - WPM: " + std::to_string(static_cast<int>(wpm)), introFont, 30);
+                    result.setFillColor(sf::Color(0, 255, 128));
+                    result.setStyle(sf::Text::Bold);
+                    drawCenteredText(window, result, 960.f, 620.f, true);
+
+                    sf::Text enterTxt(">> PRESS ENTER TO CONTINUE <<", introFont, 20);
                     enterTxt.setFillColor(sf::Color::White);
-                    drawCenteredText(window, enterTxt, 960.f, 650.f);
+                    drawCenteredText(window, enterTxt, 960.f, 680.f, true);
                 }
             }
             else if (activeMinigameId == MinigameID::UniBoyQuiz)
             {
-                sf::Text titleText("CAMPUS DATABASE QUIZ", introFont, 32);
-                titleText.setFillColor(sf::Color(100, 200, 255));
-                drawCenteredText(window, titleText, 960.f, 300.f);
+                sf::Text titleText("DATABASE QUERY", introFont, 40);
+                titleText.setFillColor(accent);
+                titleText.setStyle(sf::Text::Bold);
+                drawCenteredText(window, titleText, 960.f, 290.f, true);
+
+                sf::Text progressText("LOG FILE " + std::to_string(currentQuizIndex + 1) + " OF " + std::to_string((int)quizQuestions.size()), introFont, 16);
+                progressText.setFillColor(sf::Color(180, 180, 180));
+                drawCenteredText(window, progressText, 960.f, 335.f, true);
 
                 if (!quizFinished) {
-                    sf::Text qText("Q" + std::to_string(currentQuizIndex + 1) + ": " + quizQuestions[currentQuizIndex].question, introFont, 24);
+                    sf::Text qText(quizQuestions[currentQuizIndex].question, introFont, 26);
                     qText.setFillColor(sf::Color::White);
-                    drawCenteredText(window, qText, 960.f, 380.f);
+                    drawCenteredText(window, qText, 960.f, 400.f, true);
 
+                    const char* labels[3] = { "A.", "B.", "C." };
                     for (int i = 0; i < 3; ++i) {
-                        sf::FloatRect optBounds(560.f, 480.f + (i * 80.f), 800.f, 60.f);
+                        sf::FloatRect optBounds(560.f, 480.f + (i * 80.f), 800.f, 65.f);
                         bool isHovered = optBounds.contains(mousePos);
 
-                        RoundedRectangleShape optBox(sf::Vector2f(800.f, 60.f), 12.f);
-                        optBox.setPosition(560.f, 480.f + (i * 80.f));
-                        optBox.setFillColor(isHovered ? sf::Color(50, 52, 60) : sf::Color(35, 36, 42));
-                        optBox.setOutlineThickness(1.f);
-                        optBox.setOutlineColor(isHovered ? sf::Color(150, 150, 150) : sf::Color(60, 60, 60));
+                        // Chunky Button Shadow
+                        sf::RectangleShape btnShadow(sf::Vector2f(800.f, 65.f));
+                        btnShadow.setFillColor(pixelBlack);
+                        btnShadow.setPosition(565.f, 485.f + (i * 80.f));
+                        window.draw(btnShadow);
+
+                        // Main Button Body
+                        sf::RectangleShape optBorder(sf::Vector2f(800.f, 65.f));
+                        optBorder.setFillColor(isHovered ? sf::Color::White : accent);
+                        optBorder.setPosition(560.f, 480.f + (i * 80.f));
+                        window.draw(optBorder);
+
+                        // Inner Box
+                        sf::RectangleShape optBox(sf::Vector2f(790.f, 55.f));
+                        optBox.setFillColor(isHovered ? accent : pixelDark);
+                        optBox.setPosition(565.f, 485.f + (i * 80.f));
                         window.draw(optBox);
 
-                        sf::Text optText(quizQuestions[currentQuizIndex].options[i], introFont, 20);
-                        optText.setFillColor(isHovered ? sf::Color::White : sf::Color(200, 200, 200));
-                        drawCenteredText(window, optText, 960.f, 510.f + (i * 80.f));
+                        sf::Text badgeText(labels[i], introFont, 24);
+                        badgeText.setFillColor(isHovered ? pixelBlack : sf::Color::White);
+                        badgeText.setStyle(sf::Text::Bold);
+                        badgeText.setOrigin(0, badgeText.getLocalBounds().height / 2.f);
+                        badgeText.setPosition(590.f, 502.f + (i * 80.f));
+                        window.draw(badgeText);
+
+                        sf::Text optText(quizQuestions[currentQuizIndex].options[i], introFont, 24);
+                        optText.setFillColor(isHovered ? pixelBlack : sf::Color::White);
+                        optText.setOrigin(0, optText.getLocalBounds().height / 2.f);
+                        optText.setPosition(650.f, 502.f + (i * 80.f));
+                        window.draw(optText);
                     }
                 }
                 else {
-                    sf::Text resText(quizWon ? "Verification Successful." : "Verification Failed.", introFont, 32);
-                    resText.setFillColor(quizWon ? sf::Color(100, 255, 100) : sf::Color(255, 100, 100));
-                    drawCenteredText(window, resText, 960.f, 480.f);
-                    
-                    sf::Text enterTxt("[ Press ENTER to continue ]", introFont, 18);
+                    sf::Text resText(quizWon ? "QUERY SUCCESSFUL - DATA VERIFIED" : "QUERY FAILED - ACCESS DENIED", introFont, 32);
+                    resText.setFillColor(quizWon ? sf::Color(0, 255, 128) : sf::Color(255, 50, 50));
+                    resText.setStyle(sf::Text::Bold);
+                    drawCenteredText(window, resText, 960.f, 480.f, true);
+
+                    sf::Text enterTxt(">> PRESS ENTER TO CONTINUE <<", introFont, 20);
                     enterTxt.setFillColor(sf::Color::White);
-                    drawCenteredText(window, enterTxt, 960.f, 550.f);
+                    drawCenteredText(window, enterTxt, 960.f, 560.f, true);
                 }
             }
             else if (activeMinigameId == MinigameID::FemStd1MathQuiz)
             {
-                sf::Text titleText("CALCULUS & LOGIC TEST", introFont, 32);
-                titleText.setFillColor(sf::Color(100, 200, 255));
-                drawCenteredText(window, titleText, 960.f, 300.f);
+                sf::Text titleText("ALGORITHM TEST", introFont, 40);
+                titleText.setFillColor(accent);
+                titleText.setStyle(sf::Text::Bold);
+                drawCenteredText(window, titleText, 960.f, 290.f, true);
 
                 if (!mathAnswered) {
-                    sf::Text qText("Solve: " + std::to_string(mathOp1) + " " + mathOperator + " " + std::to_string(mathOp2) + " = ?", introFont, 36);
-                    qText.setFillColor(sf::Color::White);
-                    drawCenteredText(window, qText, 960.f, 400.f);
-                    
-                    RoundedRectangleShape inputPanel(sf::Vector2f(300.f, 60.f), 10.f);
-                    inputPanel.setFillColor(sf::Color(40, 40, 45));
-                    inputPanel.setOutlineThickness(2.f);
-                    inputPanel.setOutlineColor(sf::Color(100, 100, 150));
-                    inputPanel.setOrigin(150.f, 30.f);
-                    inputPanel.setPosition(960.f, 500.f);
-                    window.draw(inputPanel);
+                    // Chunky Calculator Body
+                    sf::RectangleShape calcShadow(sf::Vector2f(440.f, 260.f));
+                    calcShadow.setFillColor(pixelBlack);
+                    calcShadow.setOrigin(220.f, 130.f);
+                    calcShadow.setPosition(970.f, 490.f);
+                    window.draw(calcShadow);
 
-                    std::string cursor = ((int)(totalTime * 2) % 2 == 0) ? "|" : "";
-                    sf::Text inText(mathInput + cursor, introFont, 28);
-                    inText.setFillColor(sf::Color::Yellow);
-                    drawCenteredText(window, inText, 960.f, 500.f);
+                    sf::RectangleShape calcBody(sf::Vector2f(440.f, 260.f));
+                    calcBody.setFillColor(sf::Color(80, 85, 95));
+                    calcBody.setOutlineThickness(6.f);
+                    calcBody.setOutlineColor(sf::Color(50, 55, 65));
+                    calcBody.setOrigin(220.f, 130.f);
+                    calcBody.setPosition(960.f, 480.f);
+                    window.draw(calcBody);
 
-                    sf::Text helper("Type answer and press ENTER", introFont, 16);
-                    helper.setFillColor(sf::Color(150, 150, 150));
-                    drawCenteredText(window, helper, 960.f, 580.f);
+                    // LCD Screen Bezel
+                    sf::RectangleShape calcScreenBorder(sf::Vector2f(400.f, 100.f));
+                    calcScreenBorder.setFillColor(pixelBlack);
+                    calcScreenBorder.setOrigin(200.f, 50.f);
+                    calcScreenBorder.setPosition(960.f, 410.f);
+                    window.draw(calcScreenBorder);
+
+                    // LCD Screen Inner
+                    sf::RectangleShape calcScreen(sf::Vector2f(380.f, 80.f));
+                    calcScreen.setFillColor(sf::Color(40, 60, 45)); // Deep retro LCD Green
+                    calcScreen.setOrigin(190.f, 40.f);
+                    calcScreen.setPosition(960.f, 410.f);
+                    window.draw(calcScreen);
+
+                    sf::Text qText(std::to_string(mathOp1) + " " + mathOperator + " " + std::to_string(mathOp2) + " =", introFont, 32);
+                    qText.setFillColor(sf::Color(100, 255, 130)); // Bright LCD Green Text
+                    qText.setOrigin(0, 0);
+                    qText.setPosition(780.f, 385.f);
+                    window.draw(qText);
+
+                    std::string cursor = ((int)(totalTime * 3) % 2 == 0) ? "_" : "";
+                    sf::Text inText(mathInput + cursor, introFont, 36);
+                    inText.setFillColor(sf::Color(100, 255, 130));
+                    inText.setStyle(sf::Text::Bold);
+                    sf::FloatRect inBounds = inText.getLocalBounds();
+                    inText.setPosition(1130.f - inBounds.width, 385.f);
+                    window.draw(inText);
+
+                    // Decorative Chunky Buttons
+                    const char* btnLabels[6] = { "7", "8", "9", "4", "5", "6" };
+                    for (int i = 0; i < 6; ++i)
+                    {
+                        int row = i / 3, col = i % 3;
+                        
+                        sf::RectangleShape btnShadow(sf::Vector2f(80.f, 50.f));
+                        btnShadow.setFillColor(pixelBlack);
+                        btnShadow.setOrigin(40.f, 25.f);
+                        btnShadow.setPosition(815.f + col * 110.f, 505.f + row * 65.f);
+                        window.draw(btnShadow);
+                        
+                        sf::RectangleShape btn(sf::Vector2f(80.f, 50.f));
+                        btn.setFillColor(sf::Color(110, 115, 125));
+                        btn.setOrigin(40.f, 25.f);
+                        btn.setPosition(810.f + col * 110.f, 500.f + row * 65.f);
+                        window.draw(btn);
+
+                        sf::Text btnText(btnLabels[i], introFont, 24);
+                        btnText.setFillColor(sf::Color::White);
+                        btnText.setStyle(sf::Text::Bold);
+                        drawCenteredText(window, btnText, 810.f + col * 110.f, 497.f + row * 65.f, true);
+                    }
+
+                    sf::Text helper("INPUT NUMBERS AND PRESS ENTER", introFont, 16);
+                    helper.setFillColor(sf::Color(180, 180, 180));
+                    drawCenteredText(window, helper, 960.f, 650.f, true);
                 }
                 else {
-                    sf::Text outcomeText(mathComplete ? "Correct!" : "Incorrect! Answer was " + std::to_string(mathTargetAnswer), introFont, 32);
-                    outcomeText.setFillColor(mathComplete ? sf::Color(100, 255, 100) : sf::Color(255, 100, 100));
-                    drawCenteredText(window, outcomeText, 960.f, 480.f);
-                    
-                    sf::Text enterTxt("[ Press ENTER to continue ]", introFont, 18);
+                    sf::Text outcomeText(mathComplete ? "CALCULATION CORRECT!" : "ERROR! EXPECTED: " + std::to_string(mathTargetAnswer), introFont, 32);
+                    outcomeText.setFillColor(mathComplete ? sf::Color(0, 255, 128) : sf::Color(255, 50, 50));
+                    outcomeText.setStyle(sf::Text::Bold);
+                    drawCenteredText(window, outcomeText, 960.f, 480.f, true);
+
+                    sf::Text enterTxt(">> PRESS ENTER TO CONTINUE <<", introFont, 20);
                     enterTxt.setFillColor(sf::Color::White);
-                    drawCenteredText(window, enterTxt, 960.f, 550.f);
+                    drawCenteredText(window, enterTxt, 960.f, 560.f, true);
                 }
             }
         }
