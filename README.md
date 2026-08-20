@@ -78,18 +78,6 @@ g++ main.cpp -o game -lsfml-graphics -lsfml-window -lsfml-system -ltmxlite
 
 ---
 
-## Recording a demo
-
-Before posting, capture a short (20–30s) clip covering:
-1. A snippet of the hostel → C2 → SEECS cutscene transition
-2. One NPC dialogue exchange
-3. One minigame start-to-finish
-4. The victory screen
-
-Drop it in `docs/gameplay.gif` (or link a video) and swap it in above.
-
----
-
 ## Known Limitations / Roadmap
 
 - Losing a minigame currently has no consequence — only clearing all 4 triggers the ending; there's no "fail" penalty yet
@@ -97,7 +85,3 @@ Drop it in `docs/gameplay.gif` (or link a video) and swap it in above.
 - No audio/music implemented yet
 
 ---
-
-## Credits
-
-Built solo by [Wasay](https://github.com/) as a personal project — a continuation of an earlier JavaFX prototype of the same game, rebuilt from the ground up in C++/SFML.
