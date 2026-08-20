@@ -328,7 +328,7 @@ int main()
     sf::RenderWindow window(sf::VideoMode(1920, 1080), "Lost In NUST");
 
     sf::Texture texture;
-    if (!texture.loadFromFile("/home/wasay/Myprojects/GAME/BACKGROUND-IMAGE/NUST Background.png"))
+    if (!texture.loadFromFile("../../BACKGROUND-IMAGE/NUST Background.png"))
         return -1;
 
     sf::Sprite sprite;
@@ -343,17 +343,17 @@ int main()
     sf::Clock globalClock;
 
     Button startButton, exitButton, settingButton, backButton, fullScreen, gameInstruction, masterVolume;
-    startButton.loadFromFile("/home/wasay/Myprojects/GAME/Buttons/Start button.png", sf::Vector2f(960, 400), sf::Vector2f(430, 160));
-    exitButton.loadFromFile("/home/wasay/Myprojects/GAME/Buttons/Exit button.png", sf::Vector2f(960, 600), sf::Vector2f(430, 160));
-    settingButton.loadFromFile("/home/wasay/Myprojects/GAME/Buttons/Setting Button.png", sf::Vector2f(960, 800), sf::Vector2f(160, 160));
-    backButton.loadFromFile("/home/wasay/Myprojects/GAME/Buttons/Back Button.png", sf::Vector2f(120, 50), sf::Vector2f(200, 80));
-    fullScreen.loadFromFile("/home/wasay/Myprojects/GAME/Buttons/FullScreen Button.png", sf::Vector2f(750, 350), sf::Vector2f(290, 130));
-    masterVolume.loadFromFile("/home/wasay/Myprojects/GAME/Buttons/Master Volume Button.png", sf::Vector2f(1150, 350), sf::Vector2f(290, 130));
-    gameInstruction.loadFromFile("/home/wasay/Myprojects/GAME/Buttons/Game Instructions .png", sf::Vector2f(960, 650), sf::Vector2f(530, 290));
+    startButton.loadFromFile("../../Buttons/Start button.png", sf::Vector2f(960, 400), sf::Vector2f(430, 160));
+    exitButton.loadFromFile("../../Buttons/Exit button.png", sf::Vector2f(960, 600), sf::Vector2f(430, 160));
+    settingButton.loadFromFile("../../Buttons/Setting Button.png", sf::Vector2f(960, 800), sf::Vector2f(160, 160));
+    backButton.loadFromFile("../../Buttons/Back Button.png", sf::Vector2f(120, 50), sf::Vector2f(200, 80));
+    fullScreen.loadFromFile("../../Buttons/FullScreen Button.png", sf::Vector2f(750, 350), sf::Vector2f(290, 130));
+    masterVolume.loadFromFile("../../Buttons/Master Volume Button.png", sf::Vector2f(1150, 350), sf::Vector2f(290, 130));
+    gameInstruction.loadFromFile("../../Buttons/Game Instructions .png", sf::Vector2f(960, 650), sf::Vector2f(530, 290));
 
-    TileMap hostel_map; hostel_map.load("/home/wasay/Myprojects/GAME/Maps/hostel_map.tmx");
-    TileMap C2_map;     C2_map.load("/home/wasay/Myprojects/GAME/Maps/C2.tmx");
-    TileMap Seecs_map;  Seecs_map.load("/home/wasay/Myprojects/GAME/Maps/Seecs.tmx");
+    TileMap hostel_map; hostel_map.load("../../Maps/hostel_map.tmx");
+    TileMap C2_map;     C2_map.load("../../Maps/C2.tmx");
+    TileMap Seecs_map;  Seecs_map.load("../../Maps/Seecs.tmx");
 
     std::vector<sf::FloatRect> Seecs_furnitureCollision=Seecs_map.getCollisionRects("class room thing");
     std::vector<sf::FloatRect> Seecs_boundaries=Seecs_map.getCollisionRects("boundries");
@@ -368,58 +368,58 @@ int main()
     collisionRects.insert(collisionRects.end(), furnitureRects.begin(), furnitureRects.end());
 
     AnimatedPlayer player;
-    player.loadAllAnimations("/home/wasay/Myprojects/GAME/Main-Char", sf::Vector2f(350, 350), sf::Vector2f(50, 50));
+    player.loadAllAnimations("../../Main-Char", sf::Vector2f(350, 350), sf::Vector2f(50, 50));
     
     NPCCharacter senior;
-    senior.loadAllAnimations("/home/wasay/Myprojects/GAME/NPC/senior_uni", sf::Vector2f(350, 600), sf::Vector2f(50, 50));
+    senior.loadAllAnimations("../../NPC/senior_uni", sf::Vector2f(350, 600), sf::Vector2f(50, 50));
     
     // --- C2 Map NPCs ---
     NPCCharacter student2;
-    student2.loadAllAnimations("/home/wasay/Myprojects/GAME/NPC/student2", sf::Vector2f(390,600), sf::Vector2f(50,50));
-    student2.loadIdleFromRotation("/home/wasay/Myprojects/GAME/NPC/student2/rotations");
+    student2.loadAllAnimations("../../NPC/student2", sf::Vector2f(390,600), sf::Vector2f(50,50));
+    student2.loadIdleFromRotation("../../NPC/student2/rotations");
 
     NPCCharacter student1;
-    student1.loadAllAnimations("/home/wasay/Myprojects/GAME/NPC/student1", sf::Vector2f(570,600), sf::Vector2f(50,50));
-    student1.loadIdleFromRotation("/home/wasay/Myprojects/GAME/NPC/student1/rotations");
+    student1.loadAllAnimations("../../NPC/student1", sf::Vector2f(570,600), sf::Vector2f(50,50));
+    student1.loadIdleFromRotation("../../NPC/student1/rotations");
 
     NPCCharacter fem_std1;
-    fem_std1.loadAllAnimations("/home/wasay/Myprojects/GAME/NPC/fem_std1", sf::Vector2f(540,600), sf::Vector2f(50,50));
-    fem_std1.loadIdleFromRotation("/home/wasay/Myprojects/GAME/NPC/fem_std1/rotations");
+    fem_std1.loadAllAnimations("../../NPC/fem_std1", sf::Vector2f(540,600), sf::Vector2f(50,50));
+    fem_std1.loadIdleFromRotation("../../NPC/fem_std1/rotations");
 
     NPCCharacter fem_student;
-    fem_student.loadAllAnimations("/home/wasay/Myprojects/GAME/NPC/fem_student", sf::Vector2f(600,800), sf::Vector2f(50,50));
-    fem_student.loadIdleFromRotation("/home/wasay/Myprojects/GAME/NPC/fem_student/rotations");
+    fem_student.loadAllAnimations("../../NPC/fem_student", sf::Vector2f(600,800), sf::Vector2f(50,50));
+    fem_student.loadIdleFromRotation("../../NPC/fem_student/rotations");
 
     NPCCharacter student3;
-    student3.loadAllAnimations("/home/wasay/Myprojects/GAME/NPC/student3", sf::Vector2f(300,600), sf::Vector2f(50,50));
-    student3.loadIdleFromRotation("/home/wasay/Myprojects/GAME/NPC/student3/rotations");
+    student3.loadAllAnimations("../../NPC/student3", sf::Vector2f(300,600), sf::Vector2f(50,50));
+    student3.loadIdleFromRotation("../../NPC/student3/rotations");
 
     NPCCharacter uni_boy;
-    uni_boy.loadAllAnimations("/home/wasay/Myprojects/GAME/NPC/uni_boy", sf::Vector2f(450,600), sf::Vector2f(50,50));
-    uni_boy.loadIdleFromRotation("/home/wasay/Myprojects/GAME/NPC/uni_boy/rotations");
+    uni_boy.loadAllAnimations("../../NPC/uni_boy", sf::Vector2f(450,600), sf::Vector2f(50,50));
+    uni_boy.loadIdleFromRotation("../../NPC/uni_boy/rotations");
 
     NPCCharacter uni_student;
-    uni_student.loadAllAnimations("/home/wasay/Myprojects/GAME/NPC/uni_student", sf::Vector2f(800,600), sf::Vector2f(50,50));
+    uni_student.loadAllAnimations("../../NPC/uni_student", sf::Vector2f(800,600), sf::Vector2f(50,50));
 
     // --- SEECS Map NPCs ---
     NPCCharacter uni_prof;
-    uni_prof.loadStationaryIdle("/home/wasay/Myprojects/GAME/NPC/uni-professor/", sf::Vector2f(610,200), sf::Vector2f(50,50));
+    uni_prof.loadStationaryIdle("../../NPC/uni-professor/", sf::Vector2f(610,200), sf::Vector2f(50,50));
 
     NPCCharacter seecs_student1;
-    seecs_student1.loadAllAnimations("/home/wasay/Myprojects/GAME/NPC/student2", sf::Vector2f(250, 250), sf::Vector2f(50, 50));
-    seecs_student1.loadIdleFromRotation("/home/wasay/Myprojects/GAME/NPC/student2/rotations");
+    seecs_student1.loadAllAnimations("../../NPC/student2", sf::Vector2f(250, 250), sf::Vector2f(50, 50));
+    seecs_student1.loadIdleFromRotation("../../NPC/student2/rotations");
 
     NPCCharacter seecs_student2;
-    seecs_student2.loadAllAnimations("/home/wasay/Myprojects/GAME/NPC/student3", sf::Vector2f(750, 350), sf::Vector2f(50, 50));
-    seecs_student2.loadIdleFromRotation("/home/wasay/Myprojects/GAME/NPC/student3/rotations");
+    seecs_student2.loadAllAnimations("../../NPC/student3", sf::Vector2f(750, 350), sf::Vector2f(50, 50));
+    seecs_student2.loadIdleFromRotation("../../NPC/student3/rotations");
 
     NPCCharacter seecs_fem1;
-    seecs_fem1.loadAllAnimations("/home/wasay/Myprojects/GAME/NPC/fem_std1", sf::Vector2f(420, 480), sf::Vector2f(50, 50));
-    seecs_fem1.loadIdleFromRotation("/home/wasay/Myprojects/GAME/NPC/fem_std1/rotations");
+    seecs_fem1.loadAllAnimations("../../NPC/fem_std1", sf::Vector2f(420, 480), sf::Vector2f(50, 50));
+    seecs_fem1.loadIdleFromRotation("../../NPC/fem_std1/rotations");
 
     NPCCharacter seecs_boy1;
-    seecs_boy1.loadAllAnimations("/home/wasay/Myprojects/GAME/NPC/uni_boy", sf::Vector2f(820, 220), sf::Vector2f(50, 50));
-    seecs_boy1.loadIdleFromRotation("/home/wasay/Myprojects/GAME/NPC/uni_boy/rotations");
+    seecs_boy1.loadAllAnimations("../../NPC/uni_boy", sf::Vector2f(820, 220), sf::Vector2f(50, 50));
+    seecs_boy1.loadIdleFromRotation("../../NPC/uni_boy/rotations");
 
     ActiveMap currentMap = ActiveMap::Hostel;
 
@@ -501,7 +501,7 @@ int main()
     float charsPerSecond = 15.f;
 
     sf::Font introFont;
-    introFont.loadFromFile("/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf");
+    introFont.loadFromFile("../../Fonts/Inter/Your Font.ttf");
     introFont.setSmooth(false); 
 
     sf::Text bubbleText;
