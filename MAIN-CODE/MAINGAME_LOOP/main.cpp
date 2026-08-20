@@ -300,7 +300,8 @@ enum GameState
     playing,
     Minigame,
     Cutscene,
-    GameOver
+    GameOver,
+    Victory
 };
 GameState currentState = GameState::Menu;
 
@@ -492,6 +493,13 @@ int main()
     bool mathFailed = false;
     bool mathAnswered = false;
 
+    // --- Ending tracking (added) ---
+    bool clearedUniBoy = false;
+    bool clearedTyping = false;
+    bool clearedMath = false;
+    bool clearedProg = false;
+    bool cutsceneIsEnding = false; // distinguishes the final "you survived" cutscene from a normal map transition
+
     float introElapsed = 0.f;
     std::vector<std::string> introLines = {
         "Yenna: Hello guys, my name is Yenna.",
@@ -501,7 +509,8 @@ int main()
     float charsPerSecond = 15.f;
 
     sf::Font introFont;
-    introFont.loadFromFile("../../Fonts/Inter/Your Font.ttf");
+    if (!introFont.loadFromFile("../../Fonts/Inter/Your Font.ttf"))
+        std::cerr << "Failed to load font: ../../Fonts/Inter/Your Font.ttf" << std::endl;
     introFont.setSmooth(false); 
 
     sf::Text bubbleText;
@@ -551,6 +560,30 @@ int main()
     minigameBox.setOutlineColor(sf::Color(60, 40, 20));
 
     bool wasChecked = fullscreenCheckbox.checked;
+
+    // Shared "a minigame was won" handler — every minigame win path calls this instead of
+    // manually resetting state, so the ending trigger only has to live in one place.
+    auto onMinigameCleared = [&]()
+    {
+        if (clearedUniBoy && clearedTyping && clearedMath && clearedProg)
+        {
+            // all four cleared — launch the ending cutscene instead of returning to free-roam
+            cutsceneText = "You Survived NUST... For Now.";
+            cutsceneIsEnding = true;
+            targetMapAfterCutscene = minigameReturnMap;
+            targetSpawnPosAfterCutscene = minigameReturnPos;
+            cutsceneTimer = 0.f;
+            currentState = GameState::Cutscene;
+            activeMinigameId = MinigameID::None;
+        }
+        else
+        {
+            currentState = GameState::playing;
+            player.setPosition(minigameReturnPos);
+            currentMap = minigameReturnMap;
+            activeMinigameId = MinigameID::None;
+        }
+    };
 
     sf::View uiView(sf::FloatRect(0, 0, 1920, 1080));
     sf::View gameView(sf::FloatRect(0, 0, 512, 288));
@@ -617,6 +650,18 @@ int main()
                     bookPickedUp = false;
                 }
             }
+            else if (currentState == GameState::Victory)
+            {
+                if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter)
+                {
+                    currentState = GameState::Menu;
+                    currentMap = ActiveMap::Hostel;
+                    player.setPosition(sf::Vector2f(350, 350));
+                    bookPickedUp = false;
+                    // reset so a replay actually has to clear all 4 again
+                    clearedUniBoy = clearedTyping = clearedMath = clearedProg = false;
+                }
+            }
             else if (currentState == GameState::Minigame)
             {
                 if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
@@ -631,10 +676,8 @@ int main()
                 {
                     if (typingComplete && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter)
                     {
-                        currentState = GameState::playing;
-                        player.setPosition(minigameReturnPos);
-                        currentMap = minigameReturnMap;
-                        activeMinigameId = MinigameID::None;
+                        clearedTyping = true;
+                        onMinigameCleared();
                     }
                     else if (!typingComplete && event.type == sf::Event::TextEntered)
                     {
@@ -654,10 +697,8 @@ int main()
                 {
                     if (quizFinished && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter)
                     {
-                        currentState = GameState::playing;
-                        player.setPosition(minigameReturnPos);
-                        currentMap = minigameReturnMap;
-                        activeMinigameId = MinigameID::None;
+                        if (quizWon) clearedUniBoy = true;
+                        onMinigameCleared();
                     }
                     else if (!quizFinished && event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
                     {
@@ -683,16 +724,8 @@ int main()
                 {
                     if (progQuizFinished && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter)
                     {
-                        if (progQuizWon) {
-                            isVictory = true;
-                            gameOverReason = "A+ SECURED! You survived your OOP project and conquered NUST!";
-                            currentState = GameState::GameOver;
-                        } else {
-                            currentState = GameState::playing;
-                            player.setPosition(minigameReturnPos);
-                            currentMap = minigameReturnMap;
-                            activeMinigameId = MinigameID::None;
-                        }
+                        if (progQuizWon) clearedProg = true;
+                        onMinigameCleared();
                     }
                     else if (!progQuizFinished && event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
                     {
@@ -718,10 +751,8 @@ int main()
                 {
                     if (mathAnswered && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter)
                     {
-                        currentState = GameState::playing;
-                        player.setPosition(minigameReturnPos);
-                        currentMap = minigameReturnMap;
-                        activeMinigameId = MinigameID::None;
+                        if (mathComplete) clearedMath = true;
+                        onMinigameCleared();
                     }
                     else if (!mathAnswered && event.type == sf::Event::TextEntered)
                     {
@@ -862,7 +893,7 @@ int main()
 
         window.clear(sf::Color::Black);
 
-        if (currentState == GameState::Menu || currentState == GameState::Setting || currentState == GameState::CharacterIntro || currentState == GameState::GameOver)
+        if (currentState == GameState::Menu || currentState == GameState::Setting || currentState == GameState::CharacterIntro || currentState == GameState::GameOver || currentState == GameState::Victory)
             window.setView(uiView);
 
         if (currentState == GameState::Menu)
@@ -898,6 +929,25 @@ int main()
             goPrompt.setFillColor(sf::Color::White);
             drawCenteredText(window, goPrompt, 960.f, 600.f, true);
         }
+        else if (currentState == GameState::Victory)
+        {
+            sf::RectangleShape overlay(sf::Vector2f(1920.f, 1080.f));
+            overlay.setFillColor(sf::Color(0, 15, 5, 235));
+            window.draw(overlay);
+
+            sf::Text vTitle("YOU SURVIVED NUST!", introFont, 64);
+            vTitle.setFillColor(sf::Color(80, 255, 140));
+            vTitle.setStyle(sf::Text::Bold);
+            drawCenteredText(window, vTitle, 960.f, 350.f, true);
+
+            sf::Text vSubtitle("All four challenges cleared. Yenna made it through the day.", introFont, 22);
+            vSubtitle.setFillColor(sf::Color(200, 220, 200));
+            drawCenteredText(window, vSubtitle, 960.f, 460.f, true);
+
+            sf::Text vPrompt(">> PRESS ENTER TO RETURN TO MAIN MENU <<", introFont, 20);
+            vPrompt.setFillColor(sf::Color::White);
+            drawCenteredText(window, vPrompt, 960.f, 600.f, true);
+        }
         else if (currentState == GameState::Cutscene)
         {
             cutsceneTimer += deltaTime;
@@ -922,7 +972,11 @@ int main()
             transitionText.setFillColor(sf::Color(255, 255, 255, static_cast<sf::Uint8>(alpha)));
             drawCenteredText(window, transitionText, 960.f, 540.f, true);
 
-            if (cutsceneTimer >= cutsceneDuration) currentState = GameState::playing;
+            if (cutsceneTimer >= cutsceneDuration)
+            {
+                currentState = cutsceneIsEnding ? GameState::Victory : GameState::playing;
+                cutsceneIsEnding = false;
+            }
         }
         else if (currentState == GameState::CharacterIntro)
         {
